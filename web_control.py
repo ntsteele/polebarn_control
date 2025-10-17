@@ -1,3 +1,4 @@
+from calibration_api import bp as cal_api_bp
 #!/usr/bin/env python3
 """
 Polebarn Control — Modular Flask Application
@@ -15,6 +16,7 @@ from flask_socketio import SocketIO
 # ───────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent
 app = Flask(
+app.register_blueprint(cal_api_bp)
     __name__,
     static_folder=str(ROOT / "static"),
     template_folder=str(ROOT / "templates")
