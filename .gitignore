@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+.env
+env/
+.venv/
+
+# Local data / outputs
+data/
+logs/
+**/*.wav
+**/*.flac
+**/*.mp3
+**/*.aif
+**/*.aiff
+**/*.npy
+**/*.npz
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.pdf
+**/*.zip
+
+# Node / web build
+node_modules/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/

@@ -1,0 +1,13 @@
+[Unit]
+Description=Polebarn Lighting Automation
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/polebarn_control
+ExecStart=/home/pi/polebarn_control/env/bin/python /home/pi/polebarn_control/mode_set.py
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target

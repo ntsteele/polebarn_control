@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="automation-feed">
+  <h1 class="title">📊 Live Show Stats</h1>
+
+  <!-- ===== DASHBOARD ROW ===== -->
+  <div class="dashboard-row">
+    <div class="card beat-card">
+      <h3>Beat Sync</h3>
+      <div class="beat-row">
+        <div id="beat-orb"></div>
+        <div class="beat-info">
+          <div><strong>BPM:</strong> <span id="bpm">--</span></div>
+          <div><strong>Intensity:</strong> <span id="intensity">--</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EXPANDABLE FEED ===== -->
+  <div class="card log-container">
+    <div class="header">
+      <h2>Event Feed</h2>
+      <button id="toggleFeed" class="btn btn-sm btn-secondary">Expand ⬇</button>
+    </div>
+    <div id="log-view" class="log-view collapsed">
+      <pre id="logOutput">(waiting for summarized events...)</pre>
+    </div>
+  </div>
+</div>
+
+<style>
+body { background:#111; color:#ffc; font-family:'Segoe UI',sans-serif; }
+.automation-feed {
+  padding:10px 16px;
+  margin:auto;
+  max-width:1000px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.title {
+  text-align:center;
+  font-size:clamp(1.6em,2.5vw,2.2em);
+  margin:10px 0 20px 0;
+}
+
+/* === Dashboard row === */
+.dashboard-row {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+  width:100%;
+  margin-bottom:10px;
+}
+.card {
+  background:#1b1b1b;
+  border:1px solid #333;
+  border-radius:10px;
+  box-shadow:0 0 8px #0006;
+  padding:12px 16px;
+}
+.beat-card {
+  flex:1 1 250px;
+  max-width:300px;
+}
+.beat-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#beat-orb {
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:radial-gradient(circle,#37d47a 30%,#145b30 100%);
+  box-shadow:0 0 6px #37d47a;
+  transition:transform 0.4s ease,box-shadow 0.4s ease,background 0.4s ease;
+}
+#beat-orb.flash {
+  background:radial-gradient(circle,#e5b73b 25%,#444 100%);
+  box-shadow:0 0 12px #e5b73b;
+}
+.beat-info {
+  font-size:0.9em;
+  line-height:1.3em;
+}
+
+/* === Feed panel === */
+.log-container { width:100%; }
+.log-container .header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+.btn {
+  background:#444;
+  color:#ffc;
+  border:1px solid #555;
+  border-radius:6px;
+  padding:5px 10px;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn:hover { background:#666; }
+.log-view {
+  background:#111;
+  border:1px solid #333;
+  border-radius:8px;
+  padding:8px;
+  font-family:monospace;
+  color:#eee;
+  overflow-y:auto;
+  transition:max-height 0.4s ease;
+  max-height:200px;
+}
+.log-view.collapsed { max-height:70px; }
+pre {
+  margin:0;
+  white-space:pre-wrap;
+  font-size:clamp(0.75em,1vw,0.9em);
+}
+</style>
+
+<script>
+let lastFlash = 0;
+let expanded = false;
+
+async function fetchFeed(){
+  try {
+    const res = await fetch('/api/automation/feed');
+    const data = await res.json();
+    const log = document.getElementById('logOutput');
+    log.innerText = data.feed.map(e => `[${e.time}] ${e.event}`).join('\n');
+
+    const bpm = data.beat_info?.bpm || '--';
+    const intensity = data.beat_info?.intensity || 0;
+    document.getElementById('bpm').innerText = bpm;
+    document.getElementById('intensity').innerText = Math.round(intensity*100)+'%';
+
+    const orb = document.getElementById('beat-orb');
+    orb.style.transform = `scale(${1 + intensity*0.05})`;
+    const now = Date.now();
+    if (now - lastFlash > 3000 && bpm !== '--') {
+      orb.classList.add('flash');
+      setTimeout(()=>orb.classList.remove('flash'),400);
+      lastFlash = now;
+    }
+  } catch(err) {
+    console.error('Feed error:', err);
+  }
+}
+
+document.getElementById('toggleFeed').addEventListener('click', () => {
+  expanded = !expanded;
+  const view = document.getElementById('log-view');
+  const btn = document.getElementById('toggleFeed');
+  if (expanded) {
+    view.classList.remove('collapsed');
+    btn.innerText = 'Collapse ⬆';
+  } else {
+    view.classList.add('collapsed');
+    btn.innerText = 'Expand ⬇';
+  }
+});
+
+setInterval(fetchFeed, 3000);
+fetchFeed();
+</script>
+{% endblock %}

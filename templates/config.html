@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% set title = "Config" %}
+{% block content %}
+<div class="config-container">
+  <h1 class="title">⚙️ Configuration</h1>
+
+  <!-- ===== CONNECTIONS ===== -->
+  <div class="card">
+    <h2>🎛️ Connection Settings</h2>
+    <form id="connForm">
+      <div class="grid-2">
+        <div>
+          <h3>XAir Mixer</h3>
+          <label>IP Address</label>
+          <input type="text" name="xair_ip" class="form-control" value="{{ xair.ip }}">
+          <label>Port</label>
+          <input type="number" name="xair_port" class="form-control" value="{{ xair.port }}">
+        </div>
+        <div>
+          <h3>QLC+ Web</h3>
+          <label>Host</label>
+          <input type="text" name="qlc_host" class="form-control" value="{{ qlc.host }}">
+          <label>Port</label>
+          <input type="number" name="qlc_port" class="form-control" value="{{ qlc.web_port }}">
+        </div>
+        <div>
+          <h3>QLC+ OSC</h3>
+          <label>Host</label>
+          <input type="text" name="osc_host" class="form-control" value="{{ osc.host }}">
+          <label>Port</label>
+          <input type="number" name="osc_port" class="form-control" value="{{ osc.port }}">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn">💾 Save Connections</button>
+        <span id="connResult" class="status-text"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== BEAT SOURCE ===== -->
+  <div class="card">
+    <h2>Beat Detection Source</h2>
+    <form id="beatForm">
+      <select id="beatSelect" name="source" class="form-control">
+        <option value="xr18">🎚️ XR18 (mix feed)</option>
+        <option value="irig_shared">🎤 iRig Reference Mics</option>
+      </select>
+      <div class="actions">
+        <button type="submit" class="btn">💾 Save Source</button>
+        <span id="beatResult" class="status-text"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== QLC+ MODE ===== -->
+  <div class="card">
+    <h2>QLC+ Mode</h2>
+    <form id="modeForm">
+      <select id="modeSelect" name="mode" class="form-control">
+        <option value="gui">GUI (Full Editor)</option>
+        <option value="kiosk">Kiosk (Fullscreen Run)</option>
+        <option value="headless">Headless (Web Only)</option>
+      </select>
+      <div class="actions">
+        <button type="submit" class="btn">🔄 Switch Mode</button>
+        <span id="modeResult" class="status-text"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== CONFIG FILE VIEW ===== -->
+  <div class="card">
+    <h2>System Config File</h2>
+    <button id="viewConfigBtn" class="btn">📝 View config.yaml</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div id="configModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <pre id="configText">{{ cfg_text }}</pre>
+  </div>
+</div>
+
+<style>
+.config-container{margin:0 auto;padding:10px 16px;max-width:900px;}
+.card{background:#1b1b1b;border:1px solid #333;border-radius:10px;padding:16px;margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+label{display:block;margin-top:8px;font-size:0.9em;color:#ddd;}
+.form-control{width:100%;padding:6px;margin-top:2px;border-radius:6px;background:#111;color:#eee;border:1px solid #444;}
+.actions{margin-top:10px;display:flex;align-items:center;gap:10px;}
+.btn{background:#e5b73b;color:#000;border:none;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;}
+.btn:hover{background:#ffd76b;}
+.status-text{font-size:0.9em;color:#999;}
+.modal{position:fixed;z-index:10;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.6);}
+.modal-content{background:#111;color:#eee;margin:5% auto;padding:20px;border:1px solid #444;width:90%;max-width:800px;border-radius:12px;box-shadow:0 0 10px #000;}
+.close{color:#aaa;float:right;font-size:28px;font-weight:bold;cursor:pointer;}
+.close:hover{color:#fff;}
+pre{white-space:pre-wrap;word-wrap:break-word;font-size:0.9rem;}
+</style>
+
+<script>
+// === Save Connections ===
+document.getElementById('connForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  const res=await fetch('/api/config/connections',{method:'POST',body:fd});
+  const d=await res.json();
+  const msg=document.getElementById('connResult');
+  if(d.ok){msg.textContent="✅ Connections saved";msg.style.color="#37d47a";}
+  else{msg.textContent="❌ "+d.err;msg.style.color="#f66";}
+});
+
+// === Mode Selector ===
+async function loadCurrentMode(){
+  const r=await fetch('/api/config/mode');const d=await r.json();
+  if(d.ok){document.getElementById('modeSelect').value=d.mode;}
+}
+document.getElementById('modeForm').addEventListener('submit',async e=>{
+  e.preventDefault();const fd=new FormData(e.target);
+  const r=await fetch('/api/config/mode',{method:'POST',body:fd});
+  const d=await r.json();const s=document.getElementById('modeResult');
+  if(d.ok){s.textContent="✅ "+d.mode.toUpperCase();s.style.color="#37d47a";}
+  else{s.textContent="❌ "+d.err;s.style.color="#f66";}
+});
+
+// === Beat Source ===
+async function loadBeatSource(){
+  const r=await fetch('/api/config/beat_source');const d=await r.json();
+  if(d.ok){document.getElementById('beatSelect').value=d.source;}
+}
+document.getElementById('beatForm').addEventListener('submit',async e=>{
+  e.preventDefault();const fd=new FormData(e.target);
+  const r=await fetch('/api/config/beat_source',{method:'POST',body:fd});
+  const d=await r.json();const s=document.getElementById('beatResult');
+  if(d.ok){s.textContent="✅ "+d.source;s.style.color="#37d47a";}
+  else{s.textContent="❌ "+d.err;s.style.color="#f66";}
+});
+
+// === Config Modal ===
+const modal=document.getElementById('configModal');
+document.getElementById('viewConfigBtn').onclick=()=>modal.style.display='block';
+document.getElementById('closeModal').onclick=()=>modal.style.display='none';
+window.onclick=e=>{if(e.target==modal)modal.style.display='none';};
+
+loadCurrentMode();
+loadBeatSource();
+</script>
+{% endblock %}

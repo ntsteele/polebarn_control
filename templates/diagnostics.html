@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="diagnostics">
+  <h1 class="title">📊 System Diagnostics</h1>
+
+  <div id="status-panels" class="grid">
+    <div class="card gauge"><h2>CPU</h2><canvas id="cpuGauge" width="120" height="120"></canvas><p id="cpuVal">--%</p></div>
+    <div class="card gauge"><h2>Memory</h2><canvas id="memGauge" width="120" height="120"></canvas><p id="memVal">--%</p></div>
+    <div class="card gauge"><h2>Temp (°C)</h2><canvas id="tempGauge" width="120" height="120"></canvas><p id="tempVal">--°C</p></div>
+    <div class="card"><h2>Uptime</h2><p id="uptime">--</p></div>
+
+    <div class="card services">
+      <h2>Services</h2>
+      <div><span>Polebarn:</span><span id="polebarn" class="status-dot"></span></div>
+      <div><span>QLC+:</span><span id="qlcplus" class="status-dot"></span></div>
+      <div><span>Auto Volume:</span><span id="auto_volume" class="status-dot"></span></div>
+      <div><span>Beat Detect:</span><span id="beat_detect" class="status-dot"></span></div>
+      <div><span>Lighting:</span><span id="lighting_auto" class="status-dot"></span></div>
+    </div>
+
+    <div class="card qlc-summary" onclick="openQLCModal()">
+      <h2>QLC+ Workspace</h2>
+      <p><strong>Fixtures:</strong> <span id="qlcFixtures">--</span></p>
+      <p><strong>Functions:</strong> <span id="qlcFunctions">--</span></p>
+      <p><strong>Universes:</strong> <span id="qlcUniverses">--</span></p>
+      <p><strong>OSC Plugins:</strong> <span id="qlcOSC">--</span></p>
+      <p><strong>Last Updated:</strong> <span id="qlcUpdated">--</span></p>
+      <p class="small text-secondary">(tap for details)</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button onclick="doAction('restart_polebarn')">Restart Polebarn</button>
+    <button onclick="doAction('restart_qlc')">Restart QLC+</button>
+    <button onclick="doAction('stop_qlc')">Stop QLC+</button>
+    <button onclick="doAction('reboot_pi')" class="danger">Reboot Pi</button>
+  </div>
+</div>
+
+<!-- Modal for QLC+ Details -->
+<div id="qlcModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeQLCModal()">&times;</span>
+    <h2>QLC+ Workspace Details</h2>
+    <div id="qlcList"><em>Loading...</em></div>
+  </div>
+</div>
+
+<style>
+body{background:#111;color:#ffc;font-family:Segoe UI,sans-serif;}
+.title{text-align:center;margin:12px 0;font-size:1.8em;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin:0 20px;}
+.card{background:#1d1d1d;border:1px solid #333;border-radius:10px;padding:12px;text-align:center;box-shadow:0 0 10px #0006;cursor:default;}
+.card h2{color:#ffc;font-size:1.1em;margin-bottom:6px;}
+.status-dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-left:6px;background:#444;}
+.status-dot.active{background:#37d47a;box-shadow:0 0 8px #37d47a;}
+.status-dot.activating{background:#e5b73b;}
+.status-dot.inactive,.status-dot.unknown{background:#c22;}
+.actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:25px 0;}
+button{background:#e5b73b;color:#000;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600;box-shadow:0 2px 5px #0007;}
+button:hover{background:#ffd76b;}
+button.danger{background:#d33;color:#fff;}
+.card.qlc-summary:hover{background:#292929;cursor:pointer;}
+.modal{display:none;position:fixed;z-index:999;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.75);}
+.modal-content{background:#1a1a1a;margin:5% auto;padding:20px;border:1px solid #333;width:90%;max-width:720px;border-radius:10px;box-shadow:0 0 15px #000;}
+.close{color:#aaa;float:right;font-size:28px;font-weight:bold;cursor:pointer;}
+.close:hover{color:#fff;}
+#qlcList table{width:100%;border-collapse:collapse;margin-top:10px;}
+#qlcList th,#qlcList td{border-bottom:1px solid #333;padding:6px 8px;text-align:left;}
+#qlcList th{color:#ffc;}
+@media(max-width:700px){.grid{grid-template-columns:1fr;}.card{font-size:0.9em;}}
+</style>
+
+<script>
+function drawGauge(id,val,color="#37d47a"){
+  const c=document.getElementById(id);if(!c)return;
+  const ctx=c.getContext("2d");
+  const pct=Math.min(val/100,1);
+  ctx.clearRect(0,0,120,120);
+  ctx.beginPath();
+  ctx.arc(60,60,50,-Math.PI/2,(2*Math.PI*pct)-Math.PI/2);
+  ctx.strokeStyle=color;ctx.lineWidth=10;ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(60,60,50,0,2*Math.PI);
+  ctx.strokeStyle="#333";ctx.lineWidth=10;
+  ctx.globalCompositeOperation='destination-over';ctx.stroke();
+  ctx.globalCompositeOperation='source-over';
+}
+
+async function loadStatus(){
+  const res = await fetch('/api/system/status');
+  const d = await res.json();
+  drawGauge("cpuGauge",d.cpu??0);
+  drawGauge("memGauge",d.mem??0,"#e5b73b");
+  drawGauge("tempGauge",Math.min((d.temp??0)/70*100,100),"#ff5555");
+  document.getElementById("cpuVal").innerText=(d.cpu??0).toFixed(1)+" %";
+  document.getElementById("memVal").innerText=(d.mem??0).toFixed(1)+" %";
+  document.getElementById("tempVal").innerText=(d.temp??0).toFixed(1)+" °C";
+  document.getElementById("uptime").innerText=d.uptime??"--";
+
+  ["polebarn","qlcplus","auto_volume","beat_detect","lighting_auto"].forEach(id=>{
+    const el=document.getElementById(id);
+    el.className="status-dot "+(d[id]||"inactive");
+  });
+
+  try {
+    const qlcRes = await fetch('/api/qlc/info');
+    const qlc = await qlcRes.json();
+    if (qlc.summary) {
+      document.getElementById('qlcFixtures').innerText = qlc.summary.fixtures;
+      document.getElementById('qlcFunctions').innerText = qlc.summary.functions;
+      document.getElementById('qlcUniverses').innerText = qlc.summary.universes;
+      document.getElementById('qlcOSC').innerText = qlc.summary.osc_plugins;
+      document.getElementById('qlcUpdated').innerText = qlc.timestamp ?? new Date().toLocaleTimeString();
+      window.latestQLC = qlc;
+    }
+  } catch(e) { console.warn("QLC fetch failed", e); }
+}
+
+function openQLCModal(){
+  const modal=document.getElementById("qlcModal");
+  const listDiv=document.getElementById("qlcList");
+  const qlc=window.latestQLC;
+  if(!qlc||!qlc.functions){listDiv.innerHTML="<em>No QLC+ data available.</em>";modal.style.display="block";return;}
+  let html="<table><tr><th>ID</th><th>Name</th><th>Type</th></tr>";
+  qlc.functions.forEach(f=>{ html+=`<tr><td>${f.id}</td><td>${f.name}</td><td>${f.type}</td></tr>`; });
+  html+="</table>";
+  listDiv.innerHTML=html;
+  modal.style.display="block";
+}
+function closeQLCModal(){document.getElementById("qlcModal").style.display="none";}
+
+async function doAction(a){
+  await fetch("/api/system/action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:a})});
+  setTimeout(loadStatus,2000);
+}
+setInterval(loadStatus,2500);
+loadStatus();
+</script>
+{% endblock %}

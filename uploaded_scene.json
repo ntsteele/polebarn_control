@@ -1,0 +1,23 @@
+{
+  "channels": {
+    "01": "Cajon",
+    "02": "Lap Steel",
+    "03": "Nick Vox",
+    "04": "Acoustic Gtr",
+    "05": "Beta 58a VOX",
+    "06": "Beta 58a VOX",
+    "07": "SM57 Gtr AMP",
+    "08": "BASS Gtr",
+    "09": "JBL Mic VOX",
+    "10": "Headset VOX",
+    "11": "PC Left",
+    "12": "PC Right",
+    "13": "Elec Drms L",
+    "14": "Elec Drms R",
+    "15": "Kawi Keybrd",
+    "16": "RaspberryPI"
+  },
+  "buses": {},
+  "dcas": {},
+  "fx": {}
+}

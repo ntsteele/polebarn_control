@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="title">🎛️ UI Playground</h1>
+<p class="text-secondary mb-4">Prototype and agree on standard component styles and Socket.IO interactions.</p>
+
+<ul class="nav nav-tabs mb-3" id="playTabs" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#lighting">Lighting</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mixer">Mixer</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#audio">Audio</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#power">Power</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#system">System</button></li>
+</ul>
+
+<div class="tab-content w-100">
+
+  <!-- Lighting -->
+  <div class="tab-pane fade show active" id="lighting">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="card text-center p-3">
+          <h5 class="text-warning">Scene Presets</h5>
+          <div class="d-grid gap-2">
+            <button class="btn btn-warning" onclick="sendUI('scene_pool')">Pool Mode</button>
+            <button class="btn btn-outline-warning" onclick="sendUI('scene_darts')">Darts Mode</button>
+            <button class="btn btn-outline-light" onclick="sendUI('scene_karaoke')">Karaoke</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="card p-3">
+          <h5 class="text-warning">Lighting Levels</h5>
+          <label class="form-label">Master Dimmer</label>
+          <input type="range" class="form-range" min="0" max="255" value="128" oninput="sendUI('dimmer_master', this.value)">
+          <label class="form-label">Pool Lights</label>
+          <input type="range" class="form-range" min="0" max="255" value="200" oninput="sendUI('dimmer_pool', this.value)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mixer -->
+  <div class="tab-pane fade" id="mixer">
+    <div class="card p-3">
+      <h5 class="text-warning mb-3">Mixer View</h5>
+      <div class="d-flex flex-row flex-wrap justify-content-start gap-3" id="mixer-strip">
+        <!-- Channel Strips -->
+        {% for ch in range(1,9) %}
+        <div class="strip text-center">
+          <div class="strip-header small text-warning fw-bold">CH{{ ch }}</div>
+          <div class="strip-fader">
+            <input type="range" orient="vertical" min="0" max="100" value="50"
+              oninput="sendUI('fader_{{ch}}', this.value)">
+          </div>
+          <div class="form-check form-switch my-1">
+            <input class="form-check-input" type="checkbox" id="mute{{ch}}"
+                   onchange="sendUI('mute_{{ch}}', this.checked)">
+            <label class="form-check-label small" for="mute{{ch}}">Mute</label>
+          </div>
+        </div>
+        {% endfor %}
+        <!-- Master -->
+        <div class="strip text-center bg-dark-subtle border border-warning rounded">
+          <div class="strip-header small text-warning fw-bold">MASTER</div>
+          <div class="strip-fader">
+            <input type="range" orient="vertical" min="0" max="100" value="70"
+              oninput="sendUI('master', this.value)">
+          </div>
+          <div class="form-check form-switch my-1">
+            <input class="form-check-input" type="checkbox" id="muteMaster"
+                   onchange="sendUI('mute_master', this.checked)">
+            <label class="form-check-label small" for="muteMaster">Mute</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <div class="tab-pane fade" id="audio">
+    <div class="card p-3">
+      <h5 class="text-warning">Audio Controls</h5>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="autovolume" onchange="sendUI('autovolume', this.checked)">
+        <label class="form-check-label" for="autovolume">Auto Volume</label>
+      </div>
+      <label class="form-label">Main Volume</label>
+      <input type="range" class="form-range" min="0" max="100" value="60" oninput="sendUI('volume_main', this.value)">
+    </div>
+  </div>
+
+  <!-- Power -->
+  <div class="tab-pane fade" id="power">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card text-center p-3">
+          <h5 class="text-warning">Power Relays</h5>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="relay1" onchange="sendUI('relay_pool', this.checked)">
+            <label class="form-check-label" for="relay1">Pool Table</label>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="relay2" onchange="sendUI('relay_darts', this.checked)">
+            <label class="form-check-label" for="relay2">Darts</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card p-3">
+          <h5 class="text-warning">Power Monitor</h5>
+          <p class="text-light small mb-2">Live sensor feedback can appear here (amps, volts, watts).</p>
+          <div class="progress" role="progressbar" style="height: 20px;">
+            <div class="progress-bar bg-warning" style="width:40%">40% Load</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System -->
+  <div class="tab-pane fade" id="system">
+    <div class="card p-3 text-center">
+      <h5 class="text-warning">System Controls</h5>
+      <p class="text-light small mb-3">For testing real-time Socket.IO feedback.</p>
+      <button class="btn btn-outline-warning" onclick="sendUI('ping')">Send Ping</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.strip {
+  width: 60px;
+  background-color: var(--bg-panel, #1a1a1a);
+  border-radius: 6px;
+  padding: 0.5rem;
+  border: 1px solid #333;
+}
+.strip-fader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 180px;
+  margin: 0.5rem 0;
+}
+input[orient=vertical] {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  width: 20px;
+  height: 160px;
+  accent-color: var(--accent, #d4af37);
+}
+</style>
+{% endblock %}

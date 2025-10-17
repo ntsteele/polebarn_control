@@ -1,0 +1,51 @@
+xair:
+  ip: 192.168.4.136
+  port: 10024
+  channel_names:
+    '01': Cajon
+    '02': Lap Steel
+    '03': Nick Vox
+    '04': Acoustic Gtr
+    '05': Beta 58a VOX
+    '06': Beta 58a VOX
+    '07': SM57 Gtr AMP
+    08: BASS Gtr
+    09: JBL Mic VOX
+    '10': Headset VOX
+    '11': PC Left
+    '12': PC Right
+    '13': ElecDrmsL
+    '14': ElecDrmsR
+    '15': Kawi Keybrd
+    '16': RaspberryPI
+  bus_names:
+    '01': IEM 1
+    '02': IEM 2
+    '03': IEM 3
+    '04': Irig
+    '05': Rear Speaker
+    '06': Subwoofer
+  dca_names:
+    '1': Master Volume (Post-Fader)
+    '2': Unused
+    '3': Unused
+    '4': Unused
+  scene_path: scene.json
+features:
+  lighting_enabled: true
+  beat_enabled: true
+  autovolume_enabled: false
+web:
+  brand: Polebarn Signature
+  theme: dark
+  port: 5055
+paths:
+  scene_json: scene.json
+  telemetry_dir: /tmp/polebarn_status
+last_scene_upload: null
+qlc:
+  host: localhost
+  web_port: 9999
+osc:
+  host: localhost
+  port: 7702

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% set title = "Home" %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-md-7">
+    <div class="card bg-dark border-warning-subtle shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-warning">Quick Controls</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-sm btn-warning glow">Full Stage</button>
+          <button class="btn btn-sm btn-outline-warning">Practice</button>
+          <button class="btn btn-sm btn-outline-warning">Silent Practice</button>
+          <button class="btn btn-sm btn-outline-warning">Movie</button>
+        </div>
+        <hr/>
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-secondary small">Master (DCA 1)</div>
+          <input type="range" class="form-range flex-grow-1" min="0" max="100" value="80" id="masterRange">
+          <div class="badge bg-warning text-dark">80%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-5">
+    <div class="card bg-dark border-warning-subtle shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-warning">Live Meters</h5>
+        <div id="meters" class="small">
+          <div class="meter"><span>Main L</span><div class="bar" id="m-main_l"></div></div>
+          <div class="meter"><span>Main R</span><div class="bar" id="m-main_r"></div></div>
+          <div class="meter"><span>Aux 1</span><div class="bar" id="m-aux1"></div></div>
+          <div class="meter"><span>Aux 2</span><div class="bar" id="m-aux2"></div></div>
+          <div class="meter"><span>Aux 3</span><div class="bar" id="m-aux3"></div></div>
+          <div class="meter"><span>Aux 4</span><div class="bar" id="m-aux4"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card bg-dark border-warning-subtle shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-warning">Scenes</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-warning btn-sm">ALL ON</button>
+          <button class="btn btn-outline-warning btn-sm">ALL OFF</button>
+          <button class="btn btn-outline-warning btn-sm">VIBE — Chill</button>
+          <button class="btn btn-outline-warning btn-sm">VIBE — Dance</button>
+          <button class="btn btn-outline-warning btn-sm">VIBE — Rock</button>
+          <button class="btn btn-outline-warning btn-sm">VIBE — Country</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
