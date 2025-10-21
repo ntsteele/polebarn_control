@@ -1,0 +1,20 @@
+# /etc/systemd/system/qlcplus.service
+[Unit]
+Description=QLC+ Flexible Mode (EGLFS / GUI / Headless)
+After=network.target sound.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+EnvironmentFile=-/etc/default/polebarn_mode
+# Optional: override defaults from the launcher
+# Environment=POLEBARN_WORKSPACE=/home/pi/QLCplus/workspaces/Polebarn_Master_GOOD.qxw
+# Environment=POLEBARN_MODE=headless
+ExecStart=/usr/local/bin/qlcplus-launcher.sh
+WorkingDirectory=/home/pi
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

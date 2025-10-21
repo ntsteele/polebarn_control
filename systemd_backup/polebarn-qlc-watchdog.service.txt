@@ -1,0 +1,13 @@
+# /etc/systemd/system/polebarn-qlc-watchdog.service
+[Unit]
+Description=Polebarn QLC+ Workspace Watchdog
+After=network.target
+
+[Service]
+ExecStart=/home/pi/polebarn_control/env/bin/python /home/pi/polebarn_control/qlc_watchdog.py
+WorkingDirectory=/home/pi/polebarn_control
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

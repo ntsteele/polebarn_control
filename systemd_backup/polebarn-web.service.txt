@@ -1,0 +1,17 @@
+# /etc/systemd/system/polebarn-web.service
+[Unit]
+Description=Polebarn Web Control + XR18 shortcuts
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pi
+Group=pi
+Environment=POLEBARN_PORT=5055
+WorkingDirectory=/home/pi/polebarn_control
+ExecStart=/home/pi/polebarn_control/env/bin/python /home/pi/polebarn_control/web_control.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

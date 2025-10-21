@@ -1,0 +1,14 @@
+# /etc/systemd/system/polebarn-beat-detect.service
+[Unit]
+Description=Polebarn Beat Detection
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/polebarn_control
+ExecStart=/home/pi/polebarn_control/env/bin/python /home/pi/polebarn_control/beat_detect_xair_or_irig.py --source irig
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+# /etc/systemd/system/osc-bridge.service
+[Unit]
+Description=OSC → QLC+ WebAPI Bridge
+After=network-online.target qlcplus.service
+Wants=qlcplus.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/polebarn_control
+ExecStart=/home/pi/polebarn_control/env/bin/python /home/pi/polebarn_control/utils/osc_bridge.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

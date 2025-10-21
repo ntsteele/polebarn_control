@@ -1,0 +1,15 @@
+# /etc/systemd/system/polebarn-beat.service
+[Unit]
+Description=Polebarn Beat Detection Service
+After=network.target sound.target
+
+[Service]
+ExecStart=/home/pi/polebarn_control/env/bin/python3 /home/pi/polebarn_control/services/beat_detect_service.py
+Restart=always
+User=pi
+WorkingDirectory=/home/pi/polebarn_control
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
