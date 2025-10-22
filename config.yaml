@@ -49,3 +49,22 @@ qlc:
 osc:
   host: localhost
   port: 7702
+calibration:
+  xr18_ip: 192.168.4.136
+  sample_rate: 48000
+  safety:
+    max_gain_linear: 0.05
+    min_target_dbfs: -24
+    max_target_dbfs: -6
+  buses:
+    rear: 5
+    sub: 6
+  quick_trim:
+    default_target_dbfs: -12
+    default_channels:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
