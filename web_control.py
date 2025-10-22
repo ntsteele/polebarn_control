@@ -59,6 +59,7 @@ from config_routes import cfg_bp
 from automation_routes import auto_bp
 from diagnostics_routes import diag_bp
 from playground_routes import playground_bp  # NEW
+from calibration_routes import calibration_bp
 
 # ───────────────────────────────────────────────
 # Register Blueprints
@@ -70,6 +71,7 @@ app.register_blueprint(cfg_bp)
 app.register_blueprint(auto_bp)
 app.register_blueprint(diag_bp)
 app.register_blueprint(playground_bp)  # NEW
+app.register_blueprint(calibration_bp)
 
 # ───────────────────────────────────────────────
 # SocketIO Events
