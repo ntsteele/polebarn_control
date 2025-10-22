@@ -4,7 +4,11 @@ XR18 Routing Verification – Corrected for /lr/mix paths and 0.0–1.0 pan scal
 Plays tone through Left, Right, and Sub (Bus 6) via USB 17/18 return.
 """
 
-import time, os, subprocess, numpy as np, soundfile as sf
+import time, os, subprocess
+import numpy as np
+import pytest
+
+sf = pytest.importorskip("soundfile")
 from pythonosc.udp_client import SimpleUDPClient
 
 XR18_IP     = "192.168.4.136"
