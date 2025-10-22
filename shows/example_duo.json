@@ -1,0 +1,18 @@
+{
+  "id": "example_duo",
+  "name": "Example Duo",
+  "description": "Acoustic duo with looping guitar, light tracks, and rear fills.",
+  "mix_template": "vocal_centric",
+  "mode": "duo",
+  "channels": [
+    {"id": "lead_vocal", "label": "Lead Vocal", "xr18_channel": 1, "role": "lead_vocal"},
+    {"id": "guitar", "label": "Guitar Looper", "xr18_channel": 2, "role": "guitar"},
+    {"id": "tracks", "label": "Tracks", "xr18_channel": 3, "role": "tracks"},
+    {"id": "backing_vocal", "label": "Backing Vocal", "xr18_channel": 4, "role": "backing_vocal"}
+  ],
+  "foh": [
+    {"id": "main_lr", "label": "Main LR", "path": "/main/st", "base_db": -2.0, "weight": 1.0},
+    {"id": "subs", "label": "Subs (Aux6)", "path": "/aux/06", "base_db": -4.0, "weight": 0.6},
+    {"id": "rear_fills", "label": "Rear Fills (Aux7)", "path": "/aux/07", "base_db": -6.0, "weight": 0.4}
+  ]
+}

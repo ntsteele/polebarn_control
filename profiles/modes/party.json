@@ -1,0 +1,12 @@
+{
+  "id": "party",
+  "name": "Party",
+  "description": "High-energy dance floor that still respects the SPL ceiling.",
+  "safe_spl_min": 92.0,
+  "safe_spl_max": 102.0,
+  "preferred_spl": 98.0,
+  "deadband_db": 1.0,
+  "attack_sec": 0.6,
+  "release_sec": 1.5,
+  "max_delta_db_per_sec": 0.8
+}

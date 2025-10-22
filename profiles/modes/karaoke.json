@@ -1,0 +1,12 @@
+{
+  "id": "karaoke",
+  "name": "Karaoke",
+  "description": "Audience-led night; keep SPL moderate and vocals up front.",
+  "safe_spl_min": 86.0,
+  "safe_spl_max": 96.0,
+  "preferred_spl": 92.0,
+  "deadband_db": 1.0,
+  "attack_sec": 0.8,
+  "release_sec": 2.5,
+  "max_delta_db_per_sec": 0.6
+}

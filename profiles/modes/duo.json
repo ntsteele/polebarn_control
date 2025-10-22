@@ -1,0 +1,12 @@
+{
+  "id": "duo",
+  "name": "Duo",
+  "description": "Acoustic/looping duo target with gentle crowd bed and featured vocal.",
+  "safe_spl_min": 84.0,
+  "safe_spl_max": 94.0,
+  "preferred_spl": 90.0,
+  "deadband_db": 1.2,
+  "attack_sec": 0.9,
+  "release_sec": 2.0,
+  "max_delta_db_per_sec": 0.6
+}

@@ -59,6 +59,7 @@ from config_routes import cfg_bp
 from automation_routes import auto_bp
 from diagnostics_routes import diag_bp
 from playground_routes import playground_bp  # NEW
+from asv_routes import asv_bp, init_asv_socketio
 
 # ───────────────────────────────────────────────
 # Register Blueprints
@@ -70,6 +71,9 @@ app.register_blueprint(cfg_bp)
 app.register_blueprint(auto_bp)
 app.register_blueprint(diag_bp)
 app.register_blueprint(playground_bp)  # NEW
+app.register_blueprint(asv_bp)
+
+init_asv_socketio(socketio)
 
 # ───────────────────────────────────────────────
 # SocketIO Events

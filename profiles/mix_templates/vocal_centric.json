@@ -1,0 +1,41 @@
+{
+  "id": "vocal_centric",
+  "name": "Vocal-Centric Starter",
+  "description": "Lead vocal as the reference, rhythm section tucked slightly under with gentle stereo spread.",
+  "reference_role": "lead_vocal",
+  "reference_level_db": -18.0,
+  "targets": {
+    "lead_vocal": {"offset_db": 0.0, "pan_hint": 0},
+    "guitar": {"offset_db": -1.5, "pan_hint": -20},
+    "bass": {"offset_db": -3.0, "pan_hint": 10},
+    "keys": {"offset_db": -2.0, "pan_hint": -10},
+    "backing_vocal": {"offset_db": -6.0, "pan_hint": 20},
+    "tracks": {"offset_db": -4.0, "pan_hint": 0}
+  },
+  "pan_presets": [
+    {
+      "id": "standard_stage",
+      "name": "Standard Stage Map",
+      "hints": {
+        "lead_vocal": 0,
+        "guitar": -20,
+        "bass": 10,
+        "keys": -10,
+        "backing_vocal": 20,
+        "tracks": 0
+      }
+    },
+    {
+      "id": "wide_room",
+      "name": "Wide Room Spread",
+      "hints": {
+        "lead_vocal": 0,
+        "guitar": -35,
+        "bass": 5,
+        "keys": -25,
+        "backing_vocal": 35,
+        "tracks": 10
+      }
+    }
+  ]
+}

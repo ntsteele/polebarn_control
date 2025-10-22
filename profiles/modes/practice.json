@@ -1,0 +1,12 @@
+{
+  "id": "practice",
+  "name": "Practice",
+  "description": "Low-stress rehearsal target that keeps the room balanced without fatiguing players.",
+  "safe_spl_min": 82.0,
+  "safe_spl_max": 92.0,
+  "preferred_spl": 88.0,
+  "deadband_db": 1.5,
+  "attack_sec": 1.0,
+  "release_sec": 3.0,
+  "max_delta_db_per_sec": 0.5
+}
