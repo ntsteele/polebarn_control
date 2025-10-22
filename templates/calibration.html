@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card bg-dark border-warning-subtle shadow">
+      <div class="card-body">
+        <h1 class="h3 fw-bold text-warning mb-3">🎛️ Deep Venue Calibration</h1>
+        <p class="text-secondary small mb-4">
+          Auto-discover the XR18 mixer, log demo EQ offsets, and push a sample
+          gain trim to key channels.
+        </p>
+        <div class="d-flex gap-2">
+          <button id="runBtn" class="btn btn-warning fw-semibold">
+            Run Calibration
+          </button>
+          <button id="clearBtn" class="btn btn-outline-light">
+            Clear Output
+          </button>
+        </div>
+        <pre id="output" class="mt-3 bg-black text-warning-subtle p-3 rounded small" style="min-height: 10rem;"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const runBtn = document.getElementById('runBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const output = document.getElementById('output');
+  const endpoint = "{{ url_for('calibration.deep_venue_calibrate') }}";
+
+  function setOutput(text) {
+    output.textContent = text;
+  }
+
+  clearBtn.addEventListener('click', () => setOutput('Ready when you are.'));
+
+  runBtn.addEventListener('click', async () => {
+    runBtn.disabled = true;
+    setOutput('Running calibration...');
+    try {
+      const response = await fetch(endpoint, { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.msg || 'Calibration failed.');
+      }
+      setOutput(JSON.stringify(payload, null, 2));
+    } catch (err) {
+      setOutput(`❌ ${err.message}`);
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+  setOutput('Ready when you are.');
+})();
+</script>
+{% endblock %}
