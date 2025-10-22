@@ -12,8 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from flask import Blueprint, Response, jsonify, render_template, request, send_file
-
-from web_control import socketio
+from flask_socketio import SocketIO
 from core import xair_client
 from eq_presets import available_presets, get_preset, merge_with_current
 
@@ -27,6 +26,15 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
 calibration_bp = Blueprint("calibration", __name__)
+
+_socketio: SocketIO | None = None
+_socket_handlers_registered = False
+
+
+def _emit(event: str, payload: Dict[str, Any], namespace: str = "/ws/calibration") -> None:
+    """Safely emit Socket.IO events when the server is initialized."""
+    if _socketio is not None:
+        _socketio.emit(event, payload, namespace=namespace)
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -119,12 +127,12 @@ class GainTrimJob:
             if self._log_path:
                 with self._log_path.open("a", encoding="utf-8") as f:
                     f.write(entry + "\n")
-        socketio.emit("calibration_log", {"line": entry}, namespace="/ws/calibration")
+        _emit("calibration_log", {"line": entry})
 
     def _set_metric(self, channel: int, peak: float) -> None:
         with self._lock:
             self._metrics[str(channel)] = {"peak_dbfs": peak}
-        socketio.emit("calibration_metrics", {"metrics": self.metrics()}, namespace="/ws/calibration")
+        _emit("calibration_metrics", {"metrics": self.metrics()})
 
     def start(self, target_dbfs: float, channels: List[int], safety_cap: float) -> bool:
         if self.running:
@@ -170,7 +178,7 @@ class GainTrimJob:
             self._append_log("Gain trim completed successfully")
         with self._lock:
             self._running = False
-        socketio.emit("calibration_finished", {"job": "gain_trim"}, namespace="/ws/calibration")
+        _emit("calibration_finished", {"job": "gain_trim"})
 
 
 _GAIN_TRIM = GainTrimJob()
@@ -179,9 +187,18 @@ _GAIN_TRIM = GainTrimJob()
 # ──────────────────────────────────────────────────────────────────────
 # Socket.IO namespace
 # ──────────────────────────────────────────────────────────────────────
-@socketio.on("connect", namespace="/ws/calibration")
-def _calibration_connect():
-    socketio.emit("calibration_log", {"line": "[socket] calibration channel ready"}, namespace="/ws/calibration")
+def _register_socket_handlers(sock: SocketIO) -> None:
+    global _socket_handlers_registered
+    if _socket_handlers_registered:
+        return
+
+    namespace = "/ws/calibration"
+
+    @sock.on("connect", namespace=namespace)
+    def _calibration_connect():  # type: ignore[misc]
+        _emit("calibration_log", {"line": "[socket] calibration channel ready"})
+
+    _socket_handlers_registered = True
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -268,25 +285,13 @@ def calibration_summary():
 def _simulate_calibration(cal_id: str, duration: float = 3.0) -> None:
     state = _load_cal_state()
     label = state.get(cal_id, {}).get("label", cal_id)
-    socketio.emit(
-        "calibration_log",
-        {"line": f"Starting {label} calibration"},
-        namespace="/ws/calibration",
-    )
+    _emit("calibration_log", {"line": f"Starting {label} calibration"})
     start = time.time()
     while time.time() - start < duration:
         if _calibration_job_flags.get(cal_id) and _calibration_job_flags[cal_id].is_set():
-            socketio.emit(
-                "calibration_log",
-                {"line": f"{label} cancelled"},
-                namespace="/ws/calibration",
-            )
+            _emit("calibration_log", {"line": f"{label} cancelled"})
             break
-        socketio.emit(
-            "calibration_log",
-            {"line": f"{label}: analysing…"},
-            namespace="/ws/calibration",
-        )
+        _emit("calibration_log", {"line": f"{label}: analysing…"})
         time.sleep(0.6)
     state = _load_cal_state()
     new_value = round(random.uniform(-3.0, 3.0), 2)
@@ -297,11 +302,7 @@ def _simulate_calibration(cal_id: str, duration: float = 3.0) -> None:
         }
     )
     _save_cal_state(state)
-    socketio.emit(
-        "calibration_log",
-        {"line": f"{label} calibration complete: {new_value:+.2f} dB"},
-        namespace="/ws/calibration",
-    )
+    _emit("calibration_log", {"line": f"{label} calibration complete: {new_value:+.2f} dB"})
     _calibration_jobs.pop(cal_id, None)
     _calibration_job_flags.pop(cal_id, None)
 
@@ -415,3 +416,11 @@ def deep_venue_analysis(run_id: str):
         except json.JSONDecodeError:
             return jsonify({"ok": False, "err": "analysis unreadable"}), 500
     return jsonify({"ok": True, "analysis": payload})
+
+
+def create_calibration_blueprint(sock: SocketIO) -> Blueprint:
+    """Factory used by the application to initialise the calibration blueprint."""
+    global _socketio
+    _socketio = sock
+    _register_socket_handlers(sock)
+    return calibration_bp
