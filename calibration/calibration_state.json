@@ -1,0 +1,22 @@
+{
+  "mic_gain_adjuster": {
+    "label": "Mic Gain Adjuster",
+    "value": "Not yet calibrated",
+    "last_run": null
+  },
+  "mic_db_calibration": {
+    "label": "Mic dB Calibration",
+    "value": "Not yet calibrated",
+    "last_run": null
+  },
+  "venue_db_level": {
+    "label": "Venue dB Level Setting",
+    "value": "Offset +2.87 dB",
+    "last_run": "2025-10-22T12:51:44.313339Z"
+  },
+  "venue_deep": {
+    "label": "Venue Deep Calibration",
+    "value": "Offset +1.52 dB",
+    "last_run": "2025-10-22T12:50:04.733161Z"
+  }
+}
