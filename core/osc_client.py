@@ -104,27 +104,46 @@ def _decode_osc_all(data: bytes):
 
 class XR18:
     def __init__(self, ip: str, local_port: int = 0, verbose: bool = False):
+        """Initialize XR18 client using a single UDP socket for TX/RX."""
+        self.running = True
         self.ip = ip
         self.remote = (ip, XR18_PORT)
         self.verbose = verbose
 
+        self._create_socket(local_port)
+
+        self.msg_q: "queue.Queue[tuple[float,str,list]]" = queue.Queue()
+        self.running = False
+
+    def log(self, msg: str):
+        if self.verbose:
+            print(msg)
+
+    def _create_socket(self, local_port: int):
         # One UDP socket for BOTH send & receive
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # Allow quick rebinding if we restart the watcher
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # Optional: allow multiple processes to bind same port (Linux only)
         try:
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except OSError:
             pass
 
         # Bind to chosen port (0 = random free port)
-        self.sock.bind(("", local_port))
-        self.sock.setblocking(False)
+        sock.bind(("", local_port))
+        sock.setblocking(False)
+
+        self.sock = sock
         self.local_port = self.sock.getsockname()[1]
 
-        self.running = False
-        self.msg_q: "queue.Queue[tuple[float,str,list]]" = queue.Queue()
+    def _reconnect_socket(self):
+        port = getattr(self, "local_port", 0)
+        try:
+            self.sock.close()
+        except Exception:
+            pass
+        self._create_socket(port)
 
     # ── lifecycle ─────────────────────────────────────────────────────────────
     def start(self):
@@ -144,9 +163,17 @@ class XR18:
     def stop(self):
         self.running = False
         try:
-            self.sock.close()
+            if hasattr(self, "sock"):
+                self.sock.sendto(_build("/xremote"), self.remote)
+        except OSError:
+            pass
+        try:
+            if hasattr(self, "sock"):
+                self.sock.close()
         except Exception:
             pass
+        else:
+            self.log("[XR18] connection closed")
 
     def _rx_loop(self):
         while self.running:
@@ -173,7 +200,19 @@ class XR18:
 
     # ── tx helpers ────────────────────────────────────────────────────────────
     def _send_raw(self, datagram: bytes):
-        self.sock.sendto(datagram, self.remote)
+        try:
+            self.sock.sendto(datagram, self.remote)
+        except OSError:
+            self.log("[XR18] send failed, retrying once…")
+            try:
+                self._reconnect_socket()
+            except OSError:
+                self.log("[XR18] reconnect failed")
+                return
+            try:
+                self.sock.sendto(datagram, self.remote)
+            except OSError:
+                self.log("[XR18] reconnect failed")
 
     def send(self, address: str, *args):
         self._send_raw(_build(address, *args))
@@ -187,6 +226,26 @@ class XR18:
             return self.msg_q.get(timeout=timeout)
         except queue.Empty:
             return None
+
+    def ping(self, timeout: float = 1.0) -> bool:
+        """Send /xinfo and wait briefly for a response."""
+        self.send("/xinfo")
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            msg = self.get_message(0.1)
+            if msg and msg[1] == "/xinfo":
+                return True
+        return False
+
+    def query_param(self, path: str, timeout: float = 0.5):
+        """Request a parameter value and return its reply, or None on timeout."""
+        self.send(path)
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            msg = self.get_message(0.1)
+            if msg and msg[1] == path:
+                return msg[2]
+        return None
 
     # ── high-level API ────────────────────────────────────────────────────────
     def ch_path(self, ch: int) -> str:
